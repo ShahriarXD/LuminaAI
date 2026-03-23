@@ -6,7 +6,7 @@ import {
   type ModelId, type ProviderType, type UserProfile, type SourceCitation, type RAGChunk, type Memory,
 } from "@/lib/chat-api";
 import { AppSidebar } from "@/components/AppSidebar";
-import { HeroOrb } from "@/components/HeroOrb";
+import { HeroOrb, type OrbState } from "@/components/HeroOrb";
 import { ActionChips } from "@/components/ActionChips";
 import { ChatInput } from "@/components/ChatInput";
 import { ModelSelector } from "@/components/ModelSelector";
@@ -215,6 +215,7 @@ const Index = () => {
 
   const showHero = messages.length === 0;
   const activeProject = projects.find((p) => p.id === activeProjectId);
+  const orbState: OrbState = isLoading ? "streaming" : "idle";
 
   return (
     <div className="flex min-h-screen min-h-[100dvh]">
@@ -279,7 +280,7 @@ const Index = () => {
                   <br />
                   <span className="text-foreground">Chat Assistant</span>
                 </motion.h1>
-                <HeroOrb />
+                <HeroOrb state={orbState} />
                 <ActionChips onSelect={(label) => handleSend(label, false)} />
                 <ChatInput onSend={handleSend} onAttach={() => setShowKnowledge(true)} isLoading={isLoading} />
               </motion.div>
