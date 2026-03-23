@@ -69,7 +69,7 @@ export function KnowledgePanel({ userId, projectId, isOpen, onClose }: Knowledge
           continue;
         }
 
-        const { data: docData, error: docError } = await supabase
+        const { data: docData, error: docError } = await (supabase as any)
           .from("documents")
           .insert({
             user_id: userId,
