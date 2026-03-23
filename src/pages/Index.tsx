@@ -6,7 +6,7 @@ import {
   type ModelId, type ProviderType, type UserProfile, type SourceCitation, type RAGChunk, type Memory,
 } from "@/lib/chat-api";
 import { AppSidebar } from "@/components/AppSidebar";
-import { HeroOrb } from "@/components/HeroOrb";
+import { HeroOrb, type OrbState } from "@/components/HeroOrb";
 import { ActionChips } from "@/components/ActionChips";
 import { ChatInput } from "@/components/ChatInput";
 import { ModelSelector } from "@/components/ModelSelector";
