@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import {
   streamChat, cleanSourceMarkers, retrieveRelevantChunks, fetchMemories, triggerMemoryExtraction,
+  generateImage,
   type ModelId, type ProviderType, type UserProfile, type SourceCitation, type RAGChunk, type Memory,
+  type GeneratedImage,
 } from "@/lib/chat-api";
 import { AppSidebar } from "@/components/AppSidebar";
 import { HeroOrb, type OrbState } from "@/components/HeroOrb";
