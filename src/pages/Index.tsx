@@ -229,8 +229,20 @@ const Index = () => {
                     transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${msg.role === "user" ? "gradient-send text-primary-foreground" : "glass text-foreground"}`}>
-                      {msg.content}
+                    <div className="flex flex-col">
+                      <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${msg.role === "user" ? "gradient-send text-primary-foreground" : "glass text-foreground"}`}>
+                        {msg.content}
+                      </div>
+                      {msg.role === "assistant" && tts.isSupported && msg.content && (
+                        <SpeakButton
+                          isPlaying={tts.isPlaying && speakingIdx === i}
+                          isPaused={tts.isPaused && speakingIdx === i}
+                          onSpeak={() => { setSpeakingIdx(i); tts.speak(msg.content); }}
+                          onPause={tts.pause}
+                          onResume={tts.resume}
+                          onStop={() => { tts.stop(); setSpeakingIdx(null); }}
+                        />
+                      )}
                     </div>
                   </motion.div>
                 ))}
