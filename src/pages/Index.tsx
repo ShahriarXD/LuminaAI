@@ -7,8 +7,10 @@ import { HeroOrb } from "@/components/HeroOrb";
 import { ActionChips } from "@/components/ActionChips";
 import { ChatInput } from "@/components/ChatInput";
 import { ModelSelector } from "@/components/ModelSelector";
+import { SpeakButton } from "@/components/SpeakButton";
 import ProfilePage from "@/pages/ProfilePage";
 import { exportAsMarkdown, exportAsPdf } from "@/lib/export-chat";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { toast } from "sonner";
 
 interface ChatMsg { role: "user" | "assistant"; content: string; }
