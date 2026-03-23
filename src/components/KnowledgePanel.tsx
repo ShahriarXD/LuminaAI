@@ -120,7 +120,7 @@ export function KnowledgePanel({ userId, projectId, isOpen, onClose }: Knowledge
   };
 
   const handleDeleteMemory = async (id: string) => {
-    await supabase.from("memories").delete().eq("id", id);
+    await (supabase as any).from("memories").delete().eq("id", id);
     toast.success("Memory removed");
     loadMemories();
   };
