@@ -14,13 +14,14 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [interimTranscript, setInterimTranscript] = useState("");
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
 
-  const SpeechRecognition = typeof window !== "undefined"
-    ? (window.SpeechRecognition || (window as any).webkitSpeechRecognition)
-    : null;
+  const getSpeechRecognition = () => {
+    if (typeof window === "undefined") return null;
+    return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null;
+  };
 
-  const isSupported = !!SpeechRecognition;
+  const isSupported = !!getSpeechRecognition();
 
   const startListening = useCallback(() => {
     if (!SpeechRecognition) return;
