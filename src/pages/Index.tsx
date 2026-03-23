@@ -29,6 +29,8 @@ const Index = () => {
   const [profile, setProfile] = useState<UserProfile>({});
   const [showSettings, setShowSettings] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
+  const tts = useTextToSpeech();
 
   const loadChats = useCallback(async () => {
     let query = supabase.from("chats").select("id, title, updated_at, project_id, is_pinned, tags").order("updated_at", { ascending: false });
