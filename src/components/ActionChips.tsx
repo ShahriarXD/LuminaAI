@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
-import { Pencil, TrendingUp, Briefcase, Flame, MoreHorizontal } from "lucide-react";
+import { Lightbulb, Code, PenLine, Zap, MoreHorizontal } from "lucide-react";
 
 const chips = [
-  { icon: Pencil, label: "Market Update" },
-  { icon: TrendingUp, label: "Top Gainers" },
-  { icon: Briefcase, label: "My Portfolio" },
-  { icon: Flame, label: "Trending Tokens" },
+  { icon: Lightbulb, label: "Explain a concept" },
+  { icon: Code, label: "Write code" },
+  { icon: PenLine, label: "Help me write" },
+  { icon: Zap, label: "Brainstorm ideas" },
 ];
 
 interface ActionChipsProps {
