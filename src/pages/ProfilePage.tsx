@@ -6,6 +6,7 @@ import { ArrowLeft, Save, User, Briefcase, Heart, Target, Sliders, Trash2, Alert
 
 interface ProfilePageProps {
   onBack: () => void;
+  onDataCleared?: () => void;
 }
 
 const fields = [
