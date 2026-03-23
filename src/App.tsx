@@ -18,8 +18,11 @@ const App = () => {
   useEffect(() => {
     // Init theme from localStorage
     const theme = localStorage.getItem("theme");
-    if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+    if (theme === "dark") {
       document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      if (!theme) localStorage.setItem("theme", "light");
     }
 
     supabase.auth.onAuthStateChange((_event, session) => {
