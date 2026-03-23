@@ -240,7 +240,7 @@ const Index = () => {
   };
 
   if (showSettings) {
-    return <ProfilePage onBack={() => { setShowSettings(false); loadProfile(user?.id); }} />;
+    return <ProfilePage onBack={() => { setShowSettings(false); loadProfile(user?.id); }} onDataCleared={() => { setActiveChatId(null); setMessages([]); loadChats(); loadMemories(user?.id); }} />;
   }
 
   const showHero = messages.length === 0;
