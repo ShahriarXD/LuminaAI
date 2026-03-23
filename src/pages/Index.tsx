@@ -258,84 +258,98 @@ const Index = () => {
         </header>
 
         <div className="flex flex-1 flex-col items-center justify-center px-3 sm:px-4 pb-4 sm:pb-8">
-          {showHero ? (
-            <div className="flex flex-col items-center gap-5 sm:gap-8 w-full max-w-2xl">
-              <motion.h1
-                initial={{ y: 16, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="text-center font-display text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight"
-                style={{ lineHeight: "1.1" }}
+          <AnimatePresence mode="wait">
+            {showHero ? (
+              <motion.div
+                key="hero"
+                initial={{ opacity: 1 }}
+                exit={{ opacity: 0, scale: 0.96, y: -20 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="flex flex-col items-center gap-5 sm:gap-8 w-full max-w-2xl"
               >
-                <span className="text-gradient-muted">AI Powered</span>{" "}
-                <span className="text-foreground">Smart</span>
-                <br />
-                <span className="text-foreground">Chat Assistant</span>
-              </motion.h1>
-              <HeroOrb />
-              <ActionChips onSelect={(label) => handleSend(label, false)} />
-              <ChatInput onSend={handleSend} onAttach={() => setShowKnowledge(true)} isLoading={isLoading} />
-            </div>
-          ) : (
-            <div className="flex w-full max-w-2xl flex-1 flex-col">
-              <div ref={scrollRef} className="flex-1 space-y-3 sm:space-y-4 overflow-y-auto px-1 sm:px-2 py-4 scrollbar-none">
-                {messages.map((msg, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ y: 12, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div className={`flex flex-col ${isMobile ? "max-w-[90%]" : "max-w-[80%]"}`}>
-                      <div
-                        className={`rounded-2xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm leading-relaxed whitespace-pre-wrap ${
-                          msg.role === "user"
-                            ? "gradient-send text-primary-foreground shadow-glow"
-                            : "glass text-foreground"
-                        }`}
-                        style={msg.role === "assistant" ? {
-                          boxShadow: "0 2px 16px hsl(240 20% 50% / 0.06), inset 0 1px 0 hsl(0 0% 100% / 0.3)",
-                        } : undefined}
-                      >
-                        {msg.content}
-                      </div>
-                      {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (
-                        <SourceCitations sources={msg.sources} />
-                      )}
-                      {msg.role === "assistant" && tts.isSupported && msg.content && (
-                        <SpeakButton
-                          isPlaying={tts.isPlaying && speakingIdx === i}
-                          isPaused={tts.isPaused && speakingIdx === i}
-                          onSpeak={() => { setSpeakingIdx(i); tts.speak(msg.content); }}
-                          onPause={tts.pause}
-                          onResume={tts.resume}
-                          onStop={() => { tts.stop(); setSpeakingIdx(null); }}
-                        />
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-                {isLoading && messages[messages.length - 1]?.role === "user" && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-                    <div className="flex flex-col gap-1">
-                      <SearchStatus isSearching={true} isThinking={true} hasRagContext={false} />
-                      <div className="glass rounded-2xl px-4 py-3 text-sm text-muted-foreground" style={{ boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.3)" }}>
-                        <span className="inline-flex gap-1">
-                          <span className="animate-bounce" style={{ animationDelay: "0ms" }}>●</span>
-                          <span className="animate-bounce" style={{ animationDelay: "150ms" }}>●</span>
-                          <span className="animate-bounce" style={{ animationDelay: "300ms" }}>●</span>
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-              <div className="pb-3 sm:pb-4 pt-2">
+                <motion.h1
+                  initial={{ y: 16, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  className="text-center font-display text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight"
+                  style={{ lineHeight: "1.1" }}
+                >
+                  <span className="text-gradient-muted">AI Powered</span>{" "}
+                  <span className="text-foreground">Smart</span>
+                  <br />
+                  <span className="text-foreground">Chat Assistant</span>
+                </motion.h1>
+                <HeroOrb />
+                <ActionChips onSelect={(label) => handleSend(label, false)} />
                 <ChatInput onSend={handleSend} onAttach={() => setShowKnowledge(true)} isLoading={isLoading} />
-              </div>
-            </div>
-          )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="chat"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                className="flex w-full max-w-2xl flex-1 flex-col"
+              >
+                <div ref={scrollRef} className="flex-1 space-y-3 sm:space-y-4 overflow-y-auto px-1 sm:px-2 py-4 scrollbar-none">
+                  {messages.map((msg, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ y: 12, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ duration: 0.4, delay: i === 0 ? 0.15 : 0, ease: [0.16, 1, 0.3, 1] }}
+                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      <div className={`flex flex-col ${isMobile ? "max-w-[90%]" : "max-w-[80%]"}`}>
+                        <div
+                          className={`rounded-2xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm leading-relaxed whitespace-pre-wrap ${
+                            msg.role === "user"
+                              ? "gradient-send text-primary-foreground shadow-glow"
+                              : "glass text-foreground"
+                          }`}
+                          style={msg.role === "assistant" ? {
+                            boxShadow: "0 2px 16px hsl(240 20% 50% / 0.06), inset 0 1px 0 hsl(0 0% 100% / 0.3)",
+                          } : undefined}
+                        >
+                          {msg.content}
+                        </div>
+                        {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (
+                          <SourceCitations sources={msg.sources} />
+                        )}
+                        {msg.role === "assistant" && tts.isSupported && msg.content && (
+                          <SpeakButton
+                            isPlaying={tts.isPlaying && speakingIdx === i}
+                            isPaused={tts.isPaused && speakingIdx === i}
+                            onSpeak={() => { setSpeakingIdx(i); tts.speak(msg.content); }}
+                            onPause={tts.pause}
+                            onResume={tts.resume}
+                            onStop={() => { tts.stop(); setSpeakingIdx(null); }}
+                          />
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                  {isLoading && messages[messages.length - 1]?.role === "user" && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
+                      <div className="flex flex-col gap-1">
+                        <SearchStatus isSearching={true} isThinking={true} hasRagContext={false} />
+                        <div className="glass rounded-2xl px-4 py-3 text-sm text-muted-foreground" style={{ boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.3)" }}>
+                          <span className="inline-flex gap-1">
+                            <span className="animate-bounce" style={{ animationDelay: "0ms" }}>●</span>
+                            <span className="animate-bounce" style={{ animationDelay: "150ms" }}>●</span>
+                            <span className="animate-bounce" style={{ animationDelay: "300ms" }}>●</span>
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+                <div className="pb-3 sm:pb-4 pt-2">
+                  <ChatInput onSend={handleSend} onAttach={() => setShowKnowledge(true)} isLoading={isLoading} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </main>
 
