@@ -312,7 +312,7 @@ const Index = () => {
                 </motion.h1>
                 <HeroOrb state={orbState} />
                 <ActionChips onSelect={(label) => handleSend(label, false)} />
-                <ChatInput onSend={handleSend} onAttach={() => setShowKnowledge(true)} isLoading={isLoading} />
+                <ChatInput onSend={handleSend} onImageGen={handleImageGen} onAttach={() => setShowKnowledge(true)} isLoading={isLoading} />
               </motion.div>
             ) : (
               <motion.div
