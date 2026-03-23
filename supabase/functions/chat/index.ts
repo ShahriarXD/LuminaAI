@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, model, deepThink, profile } = await req.json();
+    const { messages, model, deepThink, searchInternet, profile } = await req.json();
     const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
     if (!GROQ_API_KEY) throw new Error("GROQ_API_KEY is not configured");
 
@@ -31,9 +31,19 @@ serve(async (req) => {
       }
     }
 
+    // Search Internet mode
+    if (searchInternet) {
+      systemPrompt += "\n\n**Web Search Mode Active:**\n- The user has requested live web-aware responses.\n- Prioritize current, up-to-date information in your answers.\n- When you reference information, clearly indicate sources or cite where the information comes from.\n- If you are uncertain about the recency of your knowledge, state that clearly.\n- Structure web-sourced answers with clear sections: Summary, Key Findings, Sources.\n- Distinguish between your general knowledge and information that would come from live web results.";
+    }
+
     // Deep Think mode
     if (deepThink) {
       systemPrompt += "\n\n**Deep Think Mode Active:**\n- Think step-by-step before answering.\n- Break complex problems into smaller parts.\n- Provide structured and detailed explanations.\n- Consider multiple perspectives.\n- Use clear headings and numbered steps where appropriate.\n- Be thorough and analytical.";
+    }
+
+    // Both modes combined
+    if (searchInternet && deepThink) {
+      systemPrompt += "\n\n**Combined Mode:** You are using both web search and deep thinking. First gather and present current web information, then provide a thorough analytical breakdown of the findings.";
     }
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {

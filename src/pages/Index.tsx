@@ -77,7 +77,7 @@ const Index = () => {
     return data.id;
   };
 
-  const handleSend = async (message: string, deepThink: boolean = false) => {
+  const handleSend = async (message: string, deepThink: boolean = false, searchInternet: boolean = false) => {
     if (isLoading) return;
     let chatId = activeChatId;
     if (!chatId) { chatId = await createChat(message); if (!chatId) return; setActiveChatId(chatId); }
@@ -93,6 +93,7 @@ const Index = () => {
       messages: [...messages, userMsg],
       model,
       deepThink,
+      searchInternet,
       profile,
       onDelta: (chunk) => {
         assistantContent += chunk;

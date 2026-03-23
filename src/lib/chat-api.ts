@@ -48,7 +48,7 @@ export async function streamChat({
         "Content-Type": "application/json",
         Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ messages, model, deepThink, profile }),
+      body: JSON.stringify({ messages, model, deepThink, searchInternet, profile }),
     });
 
     if (!resp.ok) {
