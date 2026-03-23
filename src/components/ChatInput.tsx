@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Paperclip, Brain, Mic, SendHorizonal } from "lucide-react";
 
 interface ChatInputProps {
-  onSend: (message: string) => void;
+  onSend: (message: string, deepThink: boolean) => void;
   isLoading?: boolean;
 }
 
@@ -13,7 +13,7 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
 
   const handleSubmit = () => {
     if (!value.trim() || isLoading) return;
-    onSend(value.trim());
+    onSend(value.trim(), deepThink);
     setValue("");
   };
 
@@ -24,14 +24,14 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
       transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className="w-full max-w-2xl mx-auto"
     >
-      <div className="glass-strong rounded-2xl shadow-glass p-1 transition-shadow duration-300 hover:shadow-glass-hover">
+      <div className={`glass-strong rounded-2xl shadow-glass p-1 transition-all duration-300 hover:shadow-glass-hover ${deepThink ? "ring-2 ring-accent/40" : ""}`}>
         <div className="px-4 pt-3 pb-2">
           <input
             type="text"
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-            placeholder="Ask me anything..."
+            placeholder={deepThink ? "Ask me anything (Deep Think active)..." : "Ask me anything..."}
             className="w-full bg-transparent text-foreground placeholder:text-muted-foreground text-sm outline-none font-body"
             disabled={isLoading}
           />
@@ -59,6 +59,15 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
           </div>
         </div>
       </div>
+      {deepThink && (
+        <motion.p
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-2 text-center text-[10px] text-accent font-medium"
+        >
+          🧠 Deep Think active — responses will be more detailed and analytical
+        </motion.p>
+      )}
     </motion.div>
   );
 }
@@ -79,7 +88,7 @@ function ActionButton({
       onClick={onClick}
       className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 btn-press ${
         active
-          ? "bg-primary/10 text-primary shadow-soft"
+          ? "bg-accent/15 text-accent shadow-soft"
           : "text-muted-foreground hover:bg-muted hover:text-foreground"
       }`}
     >

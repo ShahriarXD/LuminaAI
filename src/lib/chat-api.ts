@@ -2,6 +2,14 @@ import { supabase } from "@/integrations/supabase/client";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
+export interface UserProfile {
+  name?: string;
+  profession?: string;
+  interests?: string;
+  goals?: string;
+  preferences?: string;
+}
+
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
 export const AVAILABLE_MODELS = [
@@ -15,12 +23,16 @@ export type ModelId = typeof AVAILABLE_MODELS[number]["id"];
 export async function streamChat({
   messages,
   model,
+  deepThink,
+  profile,
   onDelta,
   onDone,
   onError,
 }: {
   messages: Msg[];
   model: ModelId;
+  deepThink?: boolean;
+  profile?: UserProfile;
   onDelta: (text: string) => void;
   onDone: () => void;
   onError: (error: string) => void;
@@ -34,7 +46,7 @@ export async function streamChat({
         "Content-Type": "application/json",
         Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ messages, model }),
+      body: JSON.stringify({ messages, model, deepThink, profile }),
     });
 
     if (!resp.ok) {

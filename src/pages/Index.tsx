@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { streamChat, type ModelId } from "@/lib/chat-api";
+import { streamChat, type ModelId, type UserProfile } from "@/lib/chat-api";
 import { AppSidebar } from "@/components/AppSidebar";
 import { HeroOrb } from "@/components/HeroOrb";
 import { ActionChips } from "@/components/ActionChips";
 import { ChatInput } from "@/components/ChatInput";
 import { ModelSelector } from "@/components/ModelSelector";
+import ProfilePage from "@/pages/ProfilePage";
 import { toast } from "sonner";
 
 interface ChatMsg { role: "user" | "assistant"; content: string; }
@@ -22,6 +23,8 @@ const Index = () => {
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [model, setModel] = useState<ModelId>("llama-3.3-70b-versatile");
+  const [profile, setProfile] = useState<UserProfile>({});
+  const [showSettings, setShowSettings] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const loadChats = useCallback(async () => {
@@ -41,12 +44,20 @@ const Index = () => {
     if (data) setMessages(data as ChatMsg[]);
   }, []);
 
+  const loadProfile = useCallback(async (userId: string) => {
+    const { data } = await supabase.from("profiles").select("name, profession, interests, goals, preferences").eq("user_id", userId).single();
+    if (data) setProfile(data as UserProfile);
+  }, []);
+
   useEffect(() => {
     supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
     supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
   }, []);
 
-  useEffect(() => { if (user) { loadChats(); loadProjects(); } }, [user, loadChats, loadProjects]);
+  useEffect(() => {
+    if (user) { loadChats(); loadProjects(); loadProfile(user.id); }
+  }, [user, loadChats, loadProjects, loadProfile]);
+
   useEffect(() => { if (activeChatId) loadMessages(activeChatId); else setMessages([]); }, [activeChatId, loadMessages]);
   useEffect(() => { loadChats(); }, [activeProjectId, loadChats]);
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages]);
@@ -61,7 +72,7 @@ const Index = () => {
     return data.id;
   };
 
-  const handleSend = async (message: string) => {
+  const handleSend = async (message: string, deepThink: boolean = false) => {
     if (isLoading) return;
     let chatId = activeChatId;
     if (!chatId) { chatId = await createChat(message); if (!chatId) return; setActiveChatId(chatId); }
@@ -76,6 +87,8 @@ const Index = () => {
     await streamChat({
       messages: [...messages, userMsg],
       model,
+      deepThink,
+      profile,
       onDelta: (chunk) => {
         assistantContent += chunk;
         setMessages((prev) => {
@@ -111,15 +124,17 @@ const Index = () => {
   const handleDeleteProject = async (id: string) => {
     await supabase.from("projects").delete().eq("id", id);
     if (activeProjectId === id) setActiveProjectId(null);
-    loadProjects();
-    loadChats();
-    toast.success("Project deleted");
+    loadProjects(); loadChats();
   };
 
   const handleRenameProject = async (id: string, name: string) => {
     await supabase.from("projects").update({ name }).eq("id", id);
     loadProjects();
   };
+
+  if (showSettings) {
+    return <ProfilePage onBack={() => { setShowSettings(false); loadProfile(user?.id); }} />;
+  }
 
   const showHero = messages.length === 0;
   const activeProject = projects.find((p) => p.id === activeProjectId);
@@ -138,6 +153,7 @@ const Index = () => {
         onCreateProject={handleCreateProject}
         onDeleteProject={handleDeleteProject}
         onRenameProject={handleRenameProject}
+        onOpenSettings={() => setShowSettings(true)}
       />
 
       <main className="ml-16 flex flex-1 flex-col">
@@ -150,7 +166,7 @@ const Index = () => {
               </span>
             )}
           </div>
-          <span className="text-xs text-muted-foreground truncate max-w-[160px]">{user?.email}</span>
+          <span className="text-xs text-muted-foreground truncate max-w-[160px]">{profile.name || user?.email}</span>
         </header>
 
         <div className="flex flex-1 flex-col items-center justify-center px-4 pb-8">
@@ -169,7 +185,7 @@ const Index = () => {
                 <span className="text-foreground">Chat Assistant</span>
               </motion.h1>
               <HeroOrb />
-              <ActionChips onSelect={handleSend} />
+              <ActionChips onSelect={(label) => handleSend(label, false)} />
               <ChatInput onSend={handleSend} isLoading={isLoading} />
             </div>
           ) : (
