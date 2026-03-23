@@ -30,6 +30,7 @@ export interface Memory {
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const IMAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`;
 
 export type ProviderType = "groq" | "lovable";
 
@@ -37,6 +38,14 @@ export const PROVIDERS = [
   { id: "groq" as const, label: "Groq", description: "Fast inference" },
   { id: "lovable" as const, label: "Lovable AI", description: "Gemini & GPT-5" },
 ] as const;
+
+export const IMAGE_MODELS = [
+  { id: "google/gemini-2.5-flash-image", label: "Flash Image", description: "Fast generation" },
+  { id: "google/gemini-3-pro-image-preview", label: "Pro Image", description: "Higher quality" },
+  { id: "google/gemini-3.1-flash-image-preview", label: "Flash Image Pro", description: "Fast + pro quality" },
+] as const;
+
+export type ImageModelId = typeof IMAGE_MODELS[number]["id"];
 
 export const AVAILABLE_MODELS = [
   // Groq models
