@@ -134,6 +134,7 @@ export default function ProfilePage({ onBack, onDataCleared }: ProfilePageProps)
 
       toast.success("All chats and memories have been deleted");
       setShowClearConfirm(false);
+      onDataCleared?.();
     } catch (e) {
       toast.error("Failed to clear data");
     }
