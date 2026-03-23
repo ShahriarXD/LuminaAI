@@ -4,7 +4,7 @@ import { Upload, FileText, Trash2, Loader2, CheckCircle, AlertCircle, X, Brain }
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-interface Document {
+interface DocumentRecord {
   id: string;
   name: string;
   file_type: string;
