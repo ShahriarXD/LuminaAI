@@ -35,7 +35,7 @@ export function KnowledgePanel({ userId, projectId, isOpen, onClose }: Knowledge
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
-    if (data) setDocuments(data as Document[]);
+    if (data) setDocuments(data as DocumentRecord[]);
   }, [userId]);
 
   const loadMemories = useCallback(async () => {
