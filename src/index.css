@@ -46,6 +46,43 @@
     --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
     --font-body: 'Inter', system-ui, sans-serif;
   }
+
+  .dark {
+    --background: 240 15% 8%;
+    --foreground: 240 10% 92%;
+    --card: 240 12% 12%;
+    --card-foreground: 240 10% 92%;
+    --popover: 240 12% 12%;
+    --popover-foreground: 240 10% 92%;
+    --primary: 330 65% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 12% 16%;
+    --secondary-foreground: 240 10% 85%;
+    --muted: 240 10% 18%;
+    --muted-foreground: 240 8% 55%;
+    --accent: 195 70% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 240 10% 20%;
+    --input: 240 10% 20%;
+    --ring: 330 65% 60%;
+
+    --glass-bg: 240 12% 12% / 0.7;
+    --glass-border: 240 10% 18% / 0.5;
+    --gradient-hero: linear-gradient(135deg, hsl(330 20% 10%), hsl(240 20% 10%), hsl(195 20% 10%));
+    --gradient-send: linear-gradient(135deg, hsl(330 70% 55%), hsl(350 80% 60%));
+    --gradient-orb-glow: radial-gradient(circle, hsl(330 60% 50% / 0.25) 0%, transparent 70%);
+
+    --sidebar-background: 240 12% 10% / 0.6;
+    --sidebar-foreground: 240 8% 60%;
+    --sidebar-primary: 330 65% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 12% 16%;
+    --sidebar-accent-foreground: 240 10% 85%;
+    --sidebar-border: 240 10% 18% / 0.5;
+    --sidebar-ring: 330 65% 60%;
+  }
 }
 
 @layer base {
