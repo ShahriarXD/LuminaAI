@@ -22,7 +22,7 @@ import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 
-interface ChatMsg { role: "user" | "assistant"; content: string; sources?: SourceCitation[]; }
+interface ChatMsg { role: "user" | "assistant"; content: string; sources?: SourceCitation[]; images?: GeneratedImage[]; }
 interface ChatRecord { id: string; title: string; updated_at: string; project_id: string | null; is_pinned?: boolean; tags?: string[]; }
 interface ProjectRecord { id: string; name: string; description: string | null; system_prompt: string | null; }
 
