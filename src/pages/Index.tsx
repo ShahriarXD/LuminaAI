@@ -329,6 +329,7 @@ const Index = () => {
                       role={msg.role}
                       content={msg.content}
                       sources={msg.sources}
+                      images={msg.images}
                       index={i}
                       isMobile={isMobile}
                       ttsSupported={msg.role === "assistant" && tts.isSupported}
