@@ -112,9 +112,9 @@ export function KnowledgePanel({ userId, projectId, isOpen, onClose }: Knowledge
     loadDocuments();
   };
 
-  const handleDelete = async (doc: Document) => {
-    await supabase.storage.from("knowledge-files").remove([doc.file_path]);
-    await supabase.from("documents").delete().eq("id", doc.id);
+  const handleDelete = async (doc: DocumentRecord) => {
+    await (supabase as any).storage.from("knowledge-files").remove([doc.file_path]);
+    await (supabase as any).from("documents").delete().eq("id", doc.id);
     toast.success("File deleted");
     loadDocuments();
   };
