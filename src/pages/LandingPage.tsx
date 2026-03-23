@@ -62,6 +62,7 @@ function Section({ children, className = "", delay = 0, id }: { children: React.
   return (
     <motion.section
       ref={ref}
+      id={id}
       initial={{ opacity: 0, y: 40 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
