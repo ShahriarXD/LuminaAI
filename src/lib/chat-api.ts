@@ -247,3 +247,45 @@ export async function triggerMemoryExtraction(messages: Msg[], chatId: string | 
     // Silent fail - memory extraction is non-critical
   }
 }
+
+// Image generation
+export interface GeneratedImage {
+  type: string;
+  image_url: { url: string };
+}
+
+export async function generateImage({
+  prompt,
+  model,
+  onResult,
+  onError,
+}: {
+  prompt: string;
+  model?: ImageModelId;
+  onResult: (text: string, images: GeneratedImage[]) => void;
+  onError: (error: string) => void;
+}) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    const resp = await fetch(IMAGE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({ prompt, model: model || "google/gemini-2.5-flash-image" }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ error: "Request failed" }));
+      onError(err.error || "Image generation failed");
+      return;
+    }
+
+    const data = await resp.json();
+    onResult(data.text || "", data.images || []);
+  } catch (e) {
+    onError(e instanceof Error ? e.message : "Unknown error");
+  }
+}

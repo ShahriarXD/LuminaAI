@@ -1,26 +1,32 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Paperclip, Brain, Globe, Mic, SendHorizonal } from "lucide-react";
+import { Paperclip, Brain, Globe, Mic, SendHorizonal, Image } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { VoiceListeningOverlay } from "@/components/VoiceListeningOverlay";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatInputProps {
   onSend: (message: string, deepThink: boolean, searchInternet: boolean) => void;
+  onImageGen?: (prompt: string) => void;
   onAttach?: () => void;
   isLoading?: boolean;
 }
 
-export function ChatInput({ onSend, onAttach, isLoading }: ChatInputProps) {
+export function ChatInput({ onSend, onImageGen, onAttach, isLoading }: ChatInputProps) {
   const [value, setValue] = useState("");
   const [deepThink, setDeepThink] = useState(false);
   const [searchInternet, setSearchInternet] = useState(false);
+  const [imageMode, setImageMode] = useState(false);
   const { isListening, transcript, interimTranscript, isSupported, startListening, stopListening, cancelListening } = useSpeechRecognition();
   const isMobile = useIsMobile();
 
   const handleSubmit = () => {
     if (!value.trim() || isLoading) return;
-    onSend(value.trim(), deepThink, searchInternet);
+    if (imageMode && onImageGen) {
+      onImageGen(value.trim());
+    } else {
+      onSend(value.trim(), deepThink, searchInternet);
+    }
     setValue("");
   };
 
@@ -30,7 +36,17 @@ export function ChatInput({ onSend, onAttach, isLoading }: ChatInputProps) {
     if (text) setValue((prev) => (prev ? prev + " " + text : text));
   };
 
-  const ringClass = deepThink && searchInternet
+  const handleToggleImage = () => {
+    setImageMode(!imageMode);
+    if (!imageMode) {
+      setDeepThink(false);
+      setSearchInternet(false);
+    }
+  };
+
+  const ringClass = imageMode
+    ? "ring-2 ring-[hsl(330_60%_55%_/_0.4)]"
+    : deepThink && searchInternet
     ? "ring-2 ring-[hsl(280_50%_60%_/_0.4)]"
     : deepThink
     ? "ring-2 ring-accent/40"
@@ -66,6 +82,7 @@ export function ChatInput({ onSend, onAttach, isLoading }: ChatInputProps) {
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               placeholder={
+                imageMode ? "Describe the image you want to generate..." :
                 deepThink && searchInternet ? "Search & analyze..." :
                 searchInternet ? "Ask anything (web search)..." :
                 deepThink ? "Ask anything (Deep Think)..." :
@@ -78,8 +95,13 @@ export function ChatInput({ onSend, onAttach, isLoading }: ChatInputProps) {
           <div className={`flex items-center justify-between px-2 sm:px-3 pb-2.5 ${isMobile ? "gap-1" : ""}`}>
             <div className={`flex items-center ${isMobile ? "gap-0.5" : "gap-1"}`}>
               <ActionButton icon={Paperclip} label={isMobile ? "" : "Attach"} onClick={onAttach} compact={isMobile} />
-              <ActionButton icon={Brain} label={isMobile ? "" : "Think"} active={deepThink} onClick={() => setDeepThink(!deepThink)} compact={isMobile} />
-              <ActionButton icon={Globe} label={isMobile ? "" : "Search"} active={searchInternet} onClick={() => setSearchInternet(!searchInternet)} activeColor="primary" compact={isMobile} />
+              {!imageMode && (
+                <>
+                  <ActionButton icon={Brain} label={isMobile ? "" : "Think"} active={deepThink} onClick={() => setDeepThink(!deepThink)} compact={isMobile} />
+                  <ActionButton icon={Globe} label={isMobile ? "" : "Search"} active={searchInternet} onClick={() => setSearchInternet(!searchInternet)} activeColor="primary" compact={isMobile} />
+                </>
+              )}
+              <ActionButton icon={Image} label={isMobile ? "" : "Image"} active={imageMode} onClick={handleToggleImage} activeColor="image" compact={isMobile} />
             </div>
             <div className={`flex items-center ${isMobile ? "gap-0.5" : "gap-1"}`}>
               {isSupported && (
@@ -91,17 +113,18 @@ export function ChatInput({ onSend, onAttach, isLoading }: ChatInputProps) {
                 className="group flex items-center gap-1.5 rounded-full gradient-send px-3 sm:px-4 py-1.5 text-xs font-medium text-primary-foreground transition-all duration-200 hover:shadow-glow hover:brightness-110 hover:-translate-y-0.5 btn-press disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               >
                 <SendHorizonal className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-                {!isMobile && <span>Send</span>}
+                {!isMobile && <span>{imageMode ? "Generate" : "Send"}</span>}
               </button>
             </div>
           </div>
         </div>
-        {(deepThink || searchInternet) && (
+        {(deepThink || searchInternet || imageMode) && (
           <motion.div
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-2 flex items-center justify-center gap-3 text-[10px] font-medium"
           >
+            {imageMode && <span className="text-pink-500">🖼️ Image Generation</span>}
             {deepThink && <span className="text-accent">🧠 Deep Think</span>}
             {searchInternet && <span className="text-primary">🌐 Web search</span>}
           </motion.div>
@@ -116,11 +139,13 @@ function ActionButton({ icon: Icon, label, active, onClick, activeColor = "accen
   label: string;
   active?: boolean;
   onClick?: () => void;
-  activeColor?: "accent" | "primary";
+  activeColor?: "accent" | "primary" | "image";
   compact?: boolean;
 }) {
   const activeClasses = activeColor === "primary"
     ? "bg-primary/15 text-primary shadow-soft"
+    : activeColor === "image"
+    ? "bg-pink-500/15 text-pink-500 shadow-soft"
     : "bg-accent/15 text-accent shadow-soft";
 
   return (
