@@ -280,7 +280,7 @@ const Index = () => {
                   <br />
                   <span className="text-foreground">Chat Assistant</span>
                 </motion.h1>
-                <HeroOrb />
+                <HeroOrb state={orbState} />
                 <ActionChips onSelect={(label) => handleSend(label, false)} />
                 <ChatInput onSend={handleSend} onAttach={() => setShowKnowledge(true)} isLoading={isLoading} />
               </motion.div>
