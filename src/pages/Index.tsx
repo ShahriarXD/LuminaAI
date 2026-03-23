@@ -9,20 +9,15 @@ import { ChatInput } from "@/components/ChatInput";
 import { ModelSelector } from "@/components/ModelSelector";
 import { toast } from "sonner";
 
-interface ChatMsg {
-  role: "user" | "assistant";
-  content: string;
-}
-
-interface ChatRecord {
-  id: string;
-  title: string;
-  updated_at: string;
-}
+interface ChatMsg { role: "user" | "assistant"; content: string; }
+interface ChatRecord { id: string; title: string; updated_at: string; project_id: string | null; }
+interface ProjectRecord { id: string; name: string; description: string | null; system_prompt: string | null; }
 
 const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [chats, setChats] = useState<ChatRecord[]>([]);
+  const [projects, setProjects] = useState<ProjectRecord[]>([]);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,49 +25,37 @@ const Index = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const loadChats = useCallback(async () => {
-    const { data } = await supabase
-      .from("chats")
-      .select("id, title, updated_at")
-      .order("updated_at", { ascending: false });
+    let query = supabase.from("chats").select("id, title, updated_at, project_id").order("updated_at", { ascending: false });
+    if (activeProjectId) query = query.eq("project_id", activeProjectId);
+    const { data } = await query;
     if (data) setChats(data);
+  }, [activeProjectId]);
+
+  const loadProjects = useCallback(async () => {
+    const { data } = await supabase.from("projects").select("id, name, description, system_prompt").order("updated_at", { ascending: false });
+    if (data) setProjects(data);
   }, []);
 
   const loadMessages = useCallback(async (chatId: string) => {
-    const { data } = await supabase
-      .from("messages")
-      .select("role, content")
-      .eq("chat_id", chatId)
-      .order("created_at", { ascending: true });
+    const { data } = await supabase.from("messages").select("role, content").eq("chat_id", chatId).order("created_at", { ascending: true });
     if (data) setMessages(data as ChatMsg[]);
   }, []);
 
   useEffect(() => {
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
-    });
+    supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
+    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
   }, []);
 
-  useEffect(() => { if (user) loadChats(); }, [user, loadChats]);
-
-  useEffect(() => {
-    if (activeChatId) loadMessages(activeChatId);
-    else setMessages([]);
-  }, [activeChatId, loadMessages]);
-
-  useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages]);
+  useEffect(() => { if (user) { loadChats(); loadProjects(); } }, [user, loadChats, loadProjects]);
+  useEffect(() => { if (activeChatId) loadMessages(activeChatId); else setMessages([]); }, [activeChatId, loadMessages]);
+  useEffect(() => { loadChats(); }, [activeProjectId, loadChats]);
+  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages]);
 
   const createChat = async (firstMessage: string): Promise<string | null> => {
     const title = firstMessage.slice(0, 50) + (firstMessage.length > 50 ? "..." : "");
-    const { data, error } = await supabase
-      .from("chats")
-      .insert({ user_id: user.id, title })
-      .select("id")
-      .single();
+    const insertData: any = { user_id: user.id, title };
+    if (activeProjectId) insertData.project_id = activeProjectId;
+    const { data, error } = await supabase.from("chats").insert(insertData).select("id").single();
     if (error) { toast.error("Failed to create chat"); return null; }
     await loadChats();
     return data.id;
@@ -80,13 +63,8 @@ const Index = () => {
 
   const handleSend = async (message: string) => {
     if (isLoading) return;
-
     let chatId = activeChatId;
-    if (!chatId) {
-      chatId = await createChat(message);
-      if (!chatId) return;
-      setActiveChatId(chatId);
-    }
+    if (!chatId) { chatId = await createChat(message); if (!chatId) return; setActiveChatId(chatId); }
 
     const userMsg: ChatMsg = { role: "user", content: message };
     setMessages((prev) => [...prev, userMsg]);
@@ -94,31 +72,23 @@ const Index = () => {
 
     setIsLoading(true);
     let assistantContent = "";
-    const allMessages = [...messages, userMsg];
 
     await streamChat({
-      messages: allMessages,
+      messages: [...messages, userMsg],
       model,
       onDelta: (chunk) => {
         assistantContent += chunk;
         setMessages((prev) => {
           const last = prev[prev.length - 1];
-          if (last?.role === "assistant") {
-            return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantContent } : m));
-          }
+          if (last?.role === "assistant") return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantContent } : m));
           return [...prev, { role: "assistant", content: assistantContent }];
         });
       },
       onDone: async () => {
         setIsLoading(false);
-        if (assistantContent && chatId) {
-          await supabase.from("messages").insert({ chat_id: chatId, role: "assistant", content: assistantContent });
-        }
+        if (assistantContent && chatId) await supabase.from("messages").insert({ chat_id: chatId, role: "assistant", content: assistantContent });
       },
-      onError: (error) => {
-        setIsLoading(false);
-        toast.error(error);
-      },
+      onError: (error) => { setIsLoading(false); toast.error(error); },
     });
   };
 
@@ -130,7 +100,29 @@ const Index = () => {
     loadChats();
   };
 
+  const handleCreateProject = async () => {
+    const { data, error } = await supabase.from("projects").insert({ user_id: user.id, name: "New Project" }).select("id").single();
+    if (error) { toast.error("Failed to create project"); return; }
+    await loadProjects();
+    setActiveProjectId(data.id);
+    toast.success("Project created!");
+  };
+
+  const handleDeleteProject = async (id: string) => {
+    await supabase.from("projects").delete().eq("id", id);
+    if (activeProjectId === id) setActiveProjectId(null);
+    loadProjects();
+    loadChats();
+    toast.success("Project deleted");
+  };
+
+  const handleRenameProject = async (id: string, name: string) => {
+    await supabase.from("projects").update({ name }).eq("id", id);
+    loadProjects();
+  };
+
   const showHero = messages.length === 0;
+  const activeProject = projects.find((p) => p.id === activeProjectId);
 
   return (
     <div className="flex min-h-screen">
@@ -140,11 +132,24 @@ const Index = () => {
         onSelectChat={setActiveChatId}
         onNewChat={handleNewChat}
         onDeleteChat={handleDeleteChat}
+        projects={projects}
+        activeProjectId={activeProjectId}
+        onSelectProject={setActiveProjectId}
+        onCreateProject={handleCreateProject}
+        onDeleteProject={handleDeleteProject}
+        onRenameProject={handleRenameProject}
       />
 
       <main className="ml-16 flex flex-1 flex-col">
         <header className="flex items-center justify-between px-6 py-4">
-          <ModelSelector value={model} onChange={setModel} />
+          <div className="flex items-center gap-3">
+            <ModelSelector value={model} onChange={setModel} />
+            {activeProject && (
+              <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                {activeProject.name}
+              </span>
+            )}
+          </div>
           <span className="text-xs text-muted-foreground truncate max-w-[160px]">{user?.email}</span>
         </header>
 
@@ -178,13 +183,7 @@ const Index = () => {
                     transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    <div
-                      className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
-                        msg.role === "user"
-                          ? "gradient-send text-primary-foreground"
-                          : "glass text-foreground"
-                      }`}
-                    >
+                    <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${msg.role === "user" ? "gradient-send text-primary-foreground" : "glass text-foreground"}`}>
                       {msg.content}
                     </div>
                   </motion.div>

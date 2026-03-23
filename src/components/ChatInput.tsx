@@ -24,7 +24,7 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
       transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className="w-full max-w-2xl mx-auto"
     >
-      <div className="glass-strong rounded-2xl shadow-glass p-1">
+      <div className="glass-strong rounded-2xl shadow-glass p-1 transition-shadow duration-300 hover:shadow-glass-hover">
         <div className="px-4 pt-3 pb-2">
           <input
             type="text"
@@ -51,9 +51,9 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
             <button
               onClick={handleSubmit}
               disabled={!value.trim() || isLoading}
-              className="flex items-center gap-1.5 rounded-full gradient-send px-4 py-1.5 text-xs font-medium text-primary-foreground transition-all duration-200 hover:shadow-glow active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="group flex items-center gap-1.5 rounded-full gradient-send px-4 py-1.5 text-xs font-medium text-primary-foreground transition-all duration-200 hover:shadow-glow hover:brightness-110 btn-press disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <SendHorizonal className="h-3.5 w-3.5" />
+              <SendHorizonal className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
               <span>Send</span>
             </button>
           </div>
@@ -77,9 +77,9 @@ function ActionButton({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 active:scale-95 ${
+      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 btn-press ${
         active
-          ? "bg-primary/10 text-primary"
+          ? "bg-primary/10 text-primary shadow-soft"
           : "text-muted-foreground hover:bg-muted hover:text-foreground"
       }`}
     >
