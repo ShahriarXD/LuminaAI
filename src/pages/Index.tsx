@@ -3,9 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import {
   streamChat, cleanSourceMarkers, retrieveRelevantChunks, fetchMemories, triggerMemoryExtraction,
-  generateImage,
   type ModelId, type ProviderType, type UserProfile, type SourceCitation, type RAGChunk, type Memory,
-  type GeneratedImage,
 } from "@/lib/chat-api";
 import { AppSidebar } from "@/components/AppSidebar";
 import { HeroOrb, type OrbState } from "@/components/HeroOrb";
@@ -22,7 +20,7 @@ import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 
-interface ChatMsg { role: "user" | "assistant"; content: string; sources?: SourceCitation[]; images?: GeneratedImage[]; }
+interface ChatMsg { role: "user" | "assistant"; content: string; sources?: SourceCitation[]; }
 interface ChatRecord { id: string; title: string; updated_at: string; project_id: string | null; is_pinned?: boolean; tags?: string[]; }
 interface ProjectRecord { id: string; name: string; description: string | null; system_prompt: string | null; }
 
@@ -157,34 +155,6 @@ const Index = () => {
     });
   };
 
-  const handleImageGen = async (prompt: string) => {
-    if (isLoading) return;
-    let chatId = activeChatId;
-    if (!chatId) { chatId = await createChat(prompt); if (!chatId) return; setActiveChatId(chatId); }
-
-    const userMsg: ChatMsg = { role: "user", content: `🖼️ ${prompt}` };
-    setMessages((prev) => [...prev, userMsg]);
-    await supabase.from("messages").insert({ chat_id: chatId, role: "user", content: userMsg.content });
-
-    setIsLoading(true);
-
-    await generateImage({
-      prompt,
-      onResult: async (text, images) => {
-        setIsLoading(false);
-        const assistantMsg: ChatMsg = { role: "assistant", content: text || "Here's your generated image:", images };
-        setMessages((prev) => [...prev, assistantMsg]);
-        if (chatId) {
-          await supabase.from("messages").insert({ chat_id: chatId, role: "assistant", content: text || "Image generated" });
-        }
-      },
-      onError: (error) => {
-        setIsLoading(false);
-        toast.error(error);
-      },
-    });
-  };
-
   const handleNewChat = () => { setActiveChatId(null); setMessages([]); };
 
   const handleDeleteChat = async (id: string) => {
@@ -312,7 +282,7 @@ const Index = () => {
                 </motion.h1>
                 <HeroOrb state={orbState} />
                 <ActionChips onSelect={(label) => handleSend(label, false)} />
-                <ChatInput onSend={handleSend} onImageGen={handleImageGen} onAttach={() => setShowKnowledge(true)} isLoading={isLoading} />
+                <ChatInput onSend={handleSend} onAttach={() => setShowKnowledge(true)} isLoading={isLoading} />
               </motion.div>
             ) : (
               <motion.div
@@ -329,7 +299,6 @@ const Index = () => {
                       role={msg.role}
                       content={msg.content}
                       sources={msg.sources}
-                      images={msg.images}
                       index={i}
                       isMobile={isMobile}
                       ttsSupported={msg.role === "assistant" && tts.isSupported}
@@ -357,7 +326,7 @@ const Index = () => {
                   )}
                 </div>
                 <div className="pb-3 sm:pb-4 pt-2">
-                  <ChatInput onSend={handleSend} onImageGen={handleImageGen} onAttach={() => setShowKnowledge(true)} isLoading={isLoading} />
+                  <ChatInput onSend={handleSend} onAttach={() => setShowKnowledge(true)} isLoading={isLoading} />
                 </div>
               </motion.div>
             )}

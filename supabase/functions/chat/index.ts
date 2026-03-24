@@ -13,24 +13,11 @@ serve(async (req) => {
     const { messages, model, deepThink, searchInternet, profile, provider, ragContext, memories } = await req.json();
 
     // Determine provider and API config
-    const selectedProvider = provider || "groq";
-    let apiUrl: string;
-    let apiKey: string;
-    let selectedModel: string;
-
-    if (selectedProvider === "lovable") {
-      const key = Deno.env.get("LOVABLE_API_KEY");
-      if (!key) throw new Error("LOVABLE_API_KEY is not configured");
-      apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
-      apiKey = key;
-      selectedModel = model || "google/gemini-2.5-flash";
-    } else {
-      const key = Deno.env.get("GROQ_API_KEY");
-      if (!key) throw new Error("GROQ_API_KEY is not configured");
-      apiUrl = "https://api.groq.com/openai/v1/chat/completions";
-      apiKey = key;
-      selectedModel = model || "llama-3.3-70b-versatile";
-    }
+    const key = Deno.env.get("GROQ_API_KEY");
+    if (!key) throw new Error("GROQ_API_KEY is not configured");
+    const apiUrl = "https://api.groq.com/openai/v1/chat/completions";
+    const apiKey = key;
+    const selectedModel = model || "llama-3.3-70b-versatile";
 
     // Build system prompt
     let systemPrompt = "You are a helpful AI assistant. You provide clear, concise, and accurate responses. Be friendly and conversational.";

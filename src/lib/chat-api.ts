@@ -30,34 +30,17 @@ export interface Memory {
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
-const IMAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`;
 
-export type ProviderType = "groq" | "lovable";
+export type ProviderType = "groq";
 
 export const PROVIDERS = [
   { id: "groq" as const, label: "Groq", description: "Fast inference" },
-  { id: "lovable" as const, label: "Lovable AI", description: "Gemini & GPT-5" },
 ] as const;
-
-export const IMAGE_MODELS = [
-  { id: "google/gemini-2.5-flash-image", label: "Flash Image", description: "Fast generation" },
-  { id: "google/gemini-3-pro-image-preview", label: "Pro Image", description: "Higher quality" },
-  { id: "google/gemini-3.1-flash-image-preview", label: "Flash Image Pro", description: "Fast + pro quality" },
-] as const;
-
-export type ImageModelId = typeof IMAGE_MODELS[number]["id"];
 
 export const AVAILABLE_MODELS = [
-  // Groq models
   { id: "llama-3.3-70b-versatile", label: "LLaMA 3.3 70B", description: "Most capable", provider: "groq" as const },
   { id: "llama-3.1-8b-instant", label: "LLaMA 3.1 8B", description: "Fast & lightweight", provider: "groq" as const },
   { id: "mixtral-8x7b-32768", label: "Mixtral 8x7B", description: "Balanced performance", provider: "groq" as const },
-  // Lovable AI models
-  { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash", description: "Fast & capable", provider: "lovable" as const },
-  { id: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro", description: "Most powerful", provider: "lovable" as const },
-  { id: "google/gemini-3-flash-preview", label: "Gemini 3 Flash", description: "Next-gen fast", provider: "lovable" as const },
-  { id: "openai/gpt-5-mini", label: "GPT-5 Mini", description: "Strong & efficient", provider: "lovable" as const },
-  { id: "openai/gpt-5", label: "GPT-5", description: "Premium reasoning", provider: "lovable" as const },
 ] as const;
 
 export type ModelId = typeof AVAILABLE_MODELS[number]["id"];
@@ -248,44 +231,4 @@ export async function triggerMemoryExtraction(messages: Msg[], chatId: string | 
   }
 }
 
-// Image generation
-export interface GeneratedImage {
-  type: string;
-  image_url: { url: string };
-}
 
-export async function generateImage({
-  prompt,
-  model,
-  onResult,
-  onError,
-}: {
-  prompt: string;
-  model?: ImageModelId;
-  onResult: (text: string, images: GeneratedImage[]) => void;
-  onError: (error: string) => void;
-}) {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-
-    const resp = await fetch(IMAGE_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-      },
-      body: JSON.stringify({ prompt, model: model || "google/gemini-2.5-flash-image" }),
-    });
-
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ error: "Request failed" }));
-      onError(err.error || "Image generation failed");
-      return;
-    }
-
-    const data = await resp.json();
-    onResult(data.text || "", data.images || []);
-  } catch (e) {
-    onError(e instanceof Error ? e.message : "Unknown error");
-  }
-}
