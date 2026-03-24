@@ -1,12 +1,12 @@
-# LuminAI
+# LuminaAI
 
-LuminAI is a premium AI workspace built with Vite, React, TypeScript, and Supabase. It combines conversational chat, long-term memory, web-aware responses, file understanding, voice input/output, project workspaces, public chat sharing, and image OCR for question-paper understanding inside a polished glassmorphism UI.
+LuminaAI is a premium AI workspace built with Vite, React, TypeScript, and Supabase. It combines conversational chat, long-term memory, web-aware responses, file understanding, voice input/output, project workspaces, public chat sharing, and image OCR for question-paper understanding inside a polished glassmorphism UI.
 
 ## Preview
 https://luminabykm.vercel.app/
 
 
-![LuminAi](ss.png)
+![LuminaAi](ss.png)
 
 
 ## Features
@@ -282,7 +282,7 @@ npm run test
 
 ## UI / Design Notes
 
-LuminAI intentionally keeps its existing premium visual language:
+LuminaAI intentionally keeps its existing premium visual language:
 
 - glassmorphism surfaces
 - bright premium light theme
@@ -312,7 +312,7 @@ If you want to polish the repository even more after this README, add:
 
 ## Repository Summary
 
-LuminAI is a production-oriented AI workspace that blends premium UI, Groq-powered chat, persistent memory, document retrieval, voice interaction, and image OCR into a single React + Supabase application. It is designed to feel like a polished AI product rather than a demo, while keeping the code modular enough to extend with new chat capabilities over time.
+LuminaAI is a production-oriented AI workspace that blends premium UI, Groq-powered chat, persistent memory, document retrieval, voice interaction, and image OCR into a single React + Supabase application. It is designed to feel like a polished AI product rather than a demo, while keeping the code modular enough to extend with new chat capabilities over time.
 
 
 
